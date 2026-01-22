@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsEnum, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsMongoId,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { RoomType } from '../../../../generated/prisma/client';
 
 export class CreateRoomDto {
@@ -13,7 +21,7 @@ export class CreateRoomDto {
 
   @ApiProperty({
     description: 'Price per night',
-    example: 150.00,
+    example: 150.0,
   })
   @IsNumber()
   @IsNotEmpty()

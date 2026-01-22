@@ -22,9 +22,9 @@ export class HotelService {
     const hotel = await this.prisma.hotel.findUnique({
       where: { id },
     });
-    
+
     if (!hotel) {
-        throw new NotFoundException(`Hotel with ID ${id} not found`);
+      throw new NotFoundException(`Hotel with ID ${id} not found`);
     }
 
     return hotel;
@@ -41,7 +41,7 @@ export class HotelService {
 
   async remove(id: string): Promise<Hotel> {
     await this.findOne(id);
-    
+
     return this.prisma.hotel.delete({
       where: { id },
     });
