@@ -2,12 +2,12 @@ import {
   Injectable,
   ConflictException,
   UnauthorizedException,
-} from "@nestjs/common";
-import * as bcrypt from "bcrypt";
-import { JwtService } from "@nestjs/jwt";
-import { PrismaService } from "../database/prisma.service";
-import { RegisterDto } from "./dto/register.dto";
-import { UserRole } from "generated/prisma/client";
+} from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
+import { PrismaService } from '../database/prisma.service';
+import { RegisterDto } from './dto/register.dto';
+import { UserRole } from 'generated/prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -22,7 +22,7 @@ export class AuthService {
     });
 
     if (exists) {
-      throw new ConflictException("Email already registered");
+      throw new ConflictException('Email already registered');
     }
 
     const hash = await bcrypt.hash(dto.password, 10);
@@ -46,12 +46,12 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new UnauthorizedException("Invalid credentials");
+      throw new UnauthorizedException('Invalid credentials');
     }
 
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) {
-      throw new UnauthorizedException("Invalid credentials");
+      throw new UnauthorizedException('Invalid credentials');
     }
 
     const { password: _, ...safeUser } = user;

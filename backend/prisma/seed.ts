@@ -1,6 +1,7 @@
-
 import 'dotenv/config';
-import { PrismaClient, RoomType } from '../generated/prisma/client';
+import { PrismaClient } from '../generated/prisma/client';
+import { RoomTypeEnum } from 'src/modules/room/enum/room-type.enum';
+import { randomUUID } from 'crypto';
 
 const prisma = new PrismaClient();
 
@@ -31,32 +32,32 @@ async function main() {
   ];
 
   const roomTypes = [
-    RoomType.SINGLE_ONE_BED,
-    RoomType.SINGLE_TWO_BEDS,
-    RoomType.SINGLE_THREE_BEDS,
-    RoomType.SUITE_ONE_BIG_BED,
-    RoomType.SUITE_BIG_AND_SMALL_BED,
+    RoomTypeEnum.SINGLE_ONE_BED,
+    RoomTypeEnum.SINGLE_TWO_BEDS,
+    RoomTypeEnum.SINGLE_THREE_BEDS,
+    RoomTypeEnum.SUITE_ONE_BIG_BED,
+    RoomTypeEnum.SUITE_BIG_AND_SMALL_BED,
   ];
 
   for (const hotelData of hotelsData) {
-    const hotel = await prisma.hotel.create({
-      data: hotelData,
-    });
-    console.log(`Created hotel with id: ${hotel.id}`);
-
-    const roomsData = Array.from({ length: 13 }).map((_, index) => ({
+    const rooms = Array.from({ length: 13 }).map((_, index) => ({
+      id: randomUUID(),
       number: `${100 + index + 1}`,
-      price: 100 + (index * 20),
+      price: 100 + index * 20,
       type: roomTypes[index % roomTypes.length],
       capacity: (index % 3) + 1,
       available: true,
-      hotelId: hotel.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     }));
 
-    await prisma.room.createMany({
-      data: roomsData,
+    const hotel = await prisma.hotel.create({
+      data: {
+        ...hotelData,
+        rooms: rooms,
+      },
     });
-    console.log(`Created 13 rooms for hotel ${hotel.name}`);
+    console.log(`Created hotel with rooms, hotel name: ${hotel.name}`);
   }
 
   console.log('Seeding finished.');

@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { RoomService } from './room.service';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
@@ -11,7 +19,10 @@ export class RoomController {
 
   @Post()
   @ApiOperation({ summary: 'Create a new room' })
-  @ApiResponse({ status: 201, description: 'The room has been successfully created.' })
+  @ApiResponse({
+    status: 201,
+    description: 'The room has been successfully created.',
+  })
   create(@Body() createRoomDto: CreateRoomDto) {
     return this.roomService.create(createRoomDto);
   }
@@ -33,7 +44,10 @@ export class RoomController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update a room' })
-  @ApiResponse({ status: 200, description: 'The room has been successfully updated.' })
+  @ApiResponse({
+    status: 200,
+    description: 'The room has been successfully updated.',
+  })
   @ApiResponse({ status: 404, description: 'Room not found.' })
   update(@Param('id') id: string, @Body() updateRoomDto: UpdateRoomDto) {
     return this.roomService.update(id, updateRoomDto);
@@ -41,7 +55,10 @@ export class RoomController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a room' })
-  @ApiResponse({ status: 200, description: 'The room has been successfully deleted.' })
+  @ApiResponse({
+    status: 200,
+    description: 'The room has been successfully deleted.',
+  })
   @ApiResponse({ status: 404, description: 'Room not found.' })
   remove(@Param('id') id: string) {
     return this.roomService.remove(id);

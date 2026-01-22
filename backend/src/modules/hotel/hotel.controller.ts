@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { HotelService } from './hotel.service';
 import { CreateHotelDto } from './dto/create-hotel.dto';
@@ -11,7 +19,10 @@ export class HotelController {
 
   @Post()
   @ApiOperation({ summary: 'Create a new hotel' })
-  @ApiResponse({ status: 201, description: 'The hotel has been successfully created.' })
+  @ApiResponse({
+    status: 201,
+    description: 'The hotel has been successfully created.',
+  })
   create(@Body() createHotelDto: CreateHotelDto) {
     return this.hotelService.create(createHotelDto);
   }
@@ -33,7 +44,10 @@ export class HotelController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update a hotel' })
-  @ApiResponse({ status: 200, description: 'The hotel has been successfully updated.' })
+  @ApiResponse({
+    status: 200,
+    description: 'The hotel has been successfully updated.',
+  })
   @ApiResponse({ status: 404, description: 'Hotel not found.' })
   update(@Param('id') id: string, @Body() updateHotelDto: UpdateHotelDto) {
     return this.hotelService.update(id, updateHotelDto);
@@ -41,7 +55,10 @@ export class HotelController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a hotel' })
-  @ApiResponse({ status: 200, description: 'The hotel has been successfully deleted.' })
+  @ApiResponse({
+    status: 200,
+    description: 'The hotel has been successfully deleted.',
+  })
   @ApiResponse({ status: 404, description: 'Hotel not found.' })
   remove(@Param('id') id: string) {
     return this.hotelService.remove(id);
