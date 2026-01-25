@@ -73,3 +73,17 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model Reservation {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  hotelId   String
+  roomId    String
+  startDate DateTime
+  endDate   DateTime
+  guestName String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("reservations")
+}
