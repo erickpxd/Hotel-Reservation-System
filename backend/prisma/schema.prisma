@@ -16,7 +16,6 @@ datasource db {
 
 // --- ENUMS ---
 
-
 enum RoomType {
   SINGLE_ONE_BED
   SINGLE_TWO_BEDS
@@ -31,9 +30,13 @@ enum UserRole {
   ADMIN
 }
 
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+  PENDING
+}
 
 // --- TYPES ---
-
 
 type Room {
   id        String
@@ -41,37 +44,52 @@ type Room {
   price     Float
   type      RoomType
   capacity  Int
-  available Boolean @default(true)  
+  available Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 }
 
-
 // --- MODELS ---
 
-
 model Hotel {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   address     String
   description String?
-  
-  rooms       Room[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  rooms Room[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("hotels")
 }
 
 model User {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  email     String   @unique
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  email     String    @unique
   name      String
   password  String
-  role      UserRole @default(USER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  role      UserRole  @default(USER)
+  bookings  Booking[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Booking {
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String        @db.ObjectId
+  roomIds      String[]
+  checkInDate  DateTime
+  checkOutDate DateTime
+  totalCost    Float
+  status       BookingStatus @default(CONFIRMED)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("bookings")
 }
 
 model Reservation {
