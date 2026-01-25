@@ -1,20 +1,18 @@
 import type { Metadata } from "next";
-import { Montserrat } from "next/font/google"; 
+import { Montserrat } from "next/font/google";
 import { Toaster } from "react-hot-toast";
+import { AuthProvider } from "../context/AuthContext";
+import { Navbar } from "../shared/components/navbar";
 import "./globals.css";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
-  variable: "--font-montserrat", 
-  display: "swap",
+  variable: "--font-montserrat",
 });
 
 export const metadata: Metadata = {
   title: "JalaHotel",
   description: "Book your luxury stay today.",
-  icons: {
-    icon: "/favicon.ico",
-  },
 };
 
 export default function RootLayout({
@@ -24,9 +22,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${montserrat.variable} antialiased bg-white`}>
-        {children}
-        <Toaster position="top-center" reverseOrder={false} />
+      <body className={`${montserrat.variable} antialiased bg-gray-50 text-gray-900`}>
+        <AuthProvider>
+          <Toaster position="top-center" />
+          <Navbar />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

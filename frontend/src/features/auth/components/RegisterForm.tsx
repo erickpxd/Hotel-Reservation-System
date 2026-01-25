@@ -14,7 +14,7 @@ import { registerUser } from "../services/authApi";
 
 export function RegisterForm() {
   const router = useRouter();
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
   const {
@@ -101,13 +101,13 @@ export function RegisterForm() {
         </button>
 
         <div className="text-center text-sm text-gray-600">
-          Already have an account?{" "}
+          Already have an account?
           <a
             href="/login"
-            className="text-blue-600 font-semibold hover:underline"
-          >
-            Login
-          </a>
+            className="ml-1 text-blue-600 font-semibold hover:underline"
+          > 
+          Login
+          </a> 
         </div>
       </form>
     </div>
