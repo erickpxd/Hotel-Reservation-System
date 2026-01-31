@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { BookingSummaryDto } from './dto/booking-summary.dto';
@@ -14,7 +18,11 @@ export class BookingService {
   ): Promise<BookingSummaryDto> {
     this.validateSelectedDates(createBookingDto);
 
-    // call the method to validate the room availability
+    await this.ensureRoomsAvailability(
+      createBookingDto.roomIds,
+      createBookingDto.checkInDate,
+      createBookingDto.checkOutDate,
+    );
 
     const totalCostOfRooms =
       await this.calculateTotalCostOfRooms(createBookingDto);
@@ -45,7 +53,11 @@ export class BookingService {
   ): Promise<BookingEntity> {
     this.validateSelectedDates(createBookingDto);
 
-    // call the method to validate the room availability
+    await this.ensureRoomsAvailability(
+      createBookingDto.roomIds,
+      createBookingDto.checkInDate,
+      createBookingDto.checkOutDate,
+    );
 
     const totalCostOfRooms =
       await this.calculateTotalCostOfRooms(createBookingDto);
@@ -71,6 +83,83 @@ export class BookingService {
 
     if (createBookingDto.checkInDate < new Date()) {
       throw new Error('Check-in date must be after today');
+    }
+  }
+
+  public async checkAvailability(
+    roomId: string,
+    checkInDate: string,
+    checkOutDate: string,
+  ): Promise<{ available: boolean }> {
+    const { start, end } = this.parseAndValidateDates(
+      checkInDate,
+      checkOutDate,
+    );
+    await this.ensureAvailability(roomId, start, end);
+    return { available: true };
+  }
+
+  public async getReservedRoomIds(start: Date, end: Date): Promise<Set<string>> {
+    const bookings = await this.prisma.booking.findMany({
+      where: {
+        ...this.buildOverlapWhere(start, end),
+      },
+      select: {
+        roomIds: true,
+      },
+    });
+
+    return new Set(bookings.flatMap((booking) => booking.roomIds));
+  }
+
+  public parseAndValidateDates(
+    checkInDate: string,
+    checkOutDate: string,
+  ): { start: Date; end: Date } {
+    const start = new Date(checkInDate);
+    const end = new Date(checkOutDate);
+
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+      throw new BadRequestException('Invalid check-in or check-out date.');
+    }
+
+    if (end <= start) {
+      throw new BadRequestException(
+        'Check-out date must be after check-in date.',
+      );
+    }
+
+    return { start, end };
+  }
+
+  private async ensureRoomsAvailability(
+    roomIds: string[],
+    start: Date,
+    end: Date,
+  ): Promise<void> {
+    await Promise.all(
+      roomIds.map((roomId) => this.ensureAvailability(roomId, start, end)),
+    );
+  }
+
+  private async ensureAvailability(
+    roomId: string,
+    start: Date,
+    end: Date,
+  ): Promise<void> {
+    const conflict = await this.prisma.booking.findFirst({
+      where: {
+        roomIds: {
+          has: roomId,
+        },
+        ...this.buildOverlapWhere(start, end),
+      },
+    });
+
+    if (conflict) {
+      throw new ConflictException(
+        'Room is already booked for the selected period.',
+      );
     }
   }
 
@@ -113,5 +202,16 @@ export class BookingService {
     const numberOfNights =
       (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24);
     return numberOfNights;
+  }
+
+  private buildOverlapWhere(start: Date, end: Date) {
+    return {
+      checkInDate: {
+        lt: end,
+      },
+      checkOutDate: {
+        gt: start,
+      },
+    };
   }
 }

@@ -91,17 +91,3 @@ model Booking {
 
   @@map("bookings")
 }
-
-model Reservation {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  hotelId   String
-  roomId    String
-  startDate DateTime
-  endDate   DateTime
-  guestName String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("reservations")
-}

@@ -5,7 +5,6 @@ import { RoomModule } from './modules/room/room.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { BookingModule } from './modules/booking/booking.module';
 import { SearchModule } from './modules/search/search.module';
-import { ReservationModule } from './modules/reservation/reservation.module';
 
 @Module({
   imports: [
@@ -15,7 +14,6 @@ import { ReservationModule } from './modules/reservation/reservation.module';
     RoomModule,
     BookingModule,
     SearchModule,
-    ReservationModule,
   ],
   controllers: [],
   providers: [],

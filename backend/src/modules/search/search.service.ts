@@ -1,27 +1,25 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
+import { BookingService } from '../booking/booking.service';
 import { SearchQueryDto } from './dto/search-query.dto';
 import { SearchResultDto } from './dto/search-result.dto';
 import { Room } from '../../../generated/prisma/client';
 
 @Injectable()
 export class SearchService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly bookingService: BookingService,
+  ) {}
 
   async search(query: SearchQueryDto): Promise<SearchResultDto[]> {
     const { startDate, endDate, peopleCount, city, minPrice, maxPrice } = query;
 
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-
-    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-      throw new BadRequestException('Invalid startDate or endDate.');
-    }
-
+    const { start, end } = this.bookingService.parseAndValidateDates(
+      startDate,
+      endDate,
+    );
     const nights = this.calculateNights(start, end);
-    if (nights <= 0) {
-      throw new BadRequestException('endDate must be after startDate.');
-    }
 
     const hotels = await this.prisma.hotel.findMany({
       where: city
@@ -34,21 +32,8 @@ export class SearchService {
         : undefined,
     });
 
-    const reservedRooms = await this.prisma.reservation.findMany({
-      where: {
-        startDate: {
-          lt: end,
-        },
-        endDate: {
-          gt: start,
-        },
-      },
-      select: {
-        roomId: true,
-      },
-    });
-
-    const reservedRoomIds = new Set(reservedRooms.map((r) => r.roomId));
+    const reservedRoomIds =
+      await this.bookingService.getReservedRoomIds(start, end);
 
     const results: SearchResultDto[] = [];
 
