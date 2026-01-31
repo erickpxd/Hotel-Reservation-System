@@ -1,0 +1,10 @@
+*.env
+*.env.local
+
+*.code-workspace
+
+node_modules
+
+.next/
+next-env.d.ts
+tempCodeRunnerFile.js
