@@ -1,12 +1,23 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { BookingService } from './booking.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { BookingSummaryDto } from './dto/booking-summary.dto';
 import { BookingEntity } from './entities/booking.entity';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AvailabilityQueryDto } from './dto/availability-query.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('bookings')
+@UseGuards(AuthGuard('jwt'))
+@ApiBearerAuth()
 export class BookingController {
   constructor(private readonly bookingService: BookingService) {}
 
@@ -32,8 +43,9 @@ export class BookingController {
   })
   async createBooking(
     @Body() createBookingDto: CreateBookingDto,
+    @Request() req,
   ): Promise<BookingEntity> {
-    return this.bookingService.createBooking(createBookingDto);
+    return this.bookingService.createBooking(createBookingDto, req.user.id);
   }
 
   @Get('/availability')

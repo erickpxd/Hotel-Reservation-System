@@ -8,10 +8,14 @@ import { CreateBookingDto } from './dto/create-booking.dto';
 import { BookingSummaryDto } from './dto/booking-summary.dto';
 import { BookingEntity } from './entities/booking.entity';
 import { BookingStatus } from 'generated/prisma/enums';
+import { RoomService } from '../room/room.service';
 
 @Injectable()
 export class BookingService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly roomService: RoomService,
+  ) {}
 
   public async generateBookingSummary(
     createBookingDto: CreateBookingDto,
@@ -28,20 +32,64 @@ export class BookingService {
       await this.calculateTotalCostOfRooms(createBookingDto);
 
     const summary = new BookingSummaryDto();
-    summary.valid = true; // call validate method
+    summary.valid = true;
     summary.checkInDate = new Date(createBookingDto.checkInDate);
     summary.checkOutDate = new Date(createBookingDto.checkOutDate);
 
-    // summary.roomsSelected = createBookingDto.roomIds;
+    const selectedRooms = await this.roomService.getRoomsByIds(
+      createBookingDto.roomIds,
+    );
+    summary.roomsSelected = selectedRooms;
 
     summary.numberOfNights = this.calculateNumberOfNights(
       createBookingDto.checkInDate,
       createBookingDto.checkOutDate,
     );
-    summary.baseCost = totalCostOfRooms;
-    summary.promotionsApplied = []; // for now
-    summary.estimatedDiscount = 0; // for now
-    summary.finalCost = summary.baseCost; // for now
+    summary.adultCount = createBookingDto.adultCount;
+    summary.children = createBookingDto.children;
+    summary.baseCost = totalCostOfRooms * summary.numberOfNights;
+
+    const perPersonCost = this.calculatePerPersonCost(
+      summary.baseCost,
+      createBookingDto.adultCount,
+      createBookingDto.children.count,
+    );
+
+    const promotions: string[] = [];
+    let discountAmount = 0;
+
+    // Child Discounts
+    const childDiscounts = this.calculateChildDiscounts(
+      createBookingDto.children.ages,
+      perPersonCost,
+    );
+    discountAmount += childDiscounts.discount;
+    promotions.push(...childDiscounts.promotions);
+
+    // Group Discount
+    const groupDiscount = this.applyGroupDiscount(
+      summary.baseCost,
+      createBookingDto.adultCount,
+    );
+    discountAmount += groupDiscount.discount;
+    if (groupDiscount.promotion) promotions.push(groupDiscount.promotion);
+
+    // Festive Discount
+    const festiveDiscount = await this.applyFestiveDiscount(
+      summary.baseCost,
+      createBookingDto.checkInDate,
+      createBookingDto.roomIds,
+    );
+    discountAmount += festiveDiscount.discount;
+    if (festiveDiscount.promotion) promotions.push(festiveDiscount.promotion);
+
+    summary.promotionsApplied = promotions;
+    summary.estimatedDiscount = Number(discountAmount.toFixed(2));
+
+    summary.finalCost = Number((summary.baseCost - discountAmount).toFixed(2));
+
+    if (summary.finalCost < 0) summary.finalCost = 0;
+
     summary.cancellationPolicy =
       'Cancel 3 days before check-in for a full refund';
 
@@ -50,6 +98,7 @@ export class BookingService {
 
   public async createBooking(
     createBookingDto: CreateBookingDto,
+    userId: string,
   ): Promise<BookingEntity> {
     this.validateSelectedDates(createBookingDto);
 
@@ -59,21 +108,67 @@ export class BookingService {
       createBookingDto.checkOutDate,
     );
 
-    const totalCostOfRooms =
+    const roomRatePerNight =
       await this.calculateTotalCostOfRooms(createBookingDto);
+    const numberOfNights = this.calculateNumberOfNights(
+      createBookingDto.checkInDate,
+      createBookingDto.checkOutDate,
+    );
+    const baseCost = roomRatePerNight * numberOfNights;
 
-    return await this.prisma.booking.create({
+    // Apply Promotions
+    const perPersonCost = this.calculatePerPersonCost(
+      baseCost,
+      createBookingDto.adultCount,
+      createBookingDto.children.count,
+    );
+    let totalDiscount = 0;
+
+    // Child Discounts
+    totalDiscount += this.calculateChildDiscounts(
+      createBookingDto.children.ages,
+      perPersonCost,
+    ).discount;
+
+    // Group Discount
+    totalDiscount += this.applyGroupDiscount(
+      baseCost,
+      createBookingDto.adultCount,
+    ).discount;
+
+    // Festive Discount
+    totalDiscount += (
+      await this.applyFestiveDiscount(
+        baseCost,
+        createBookingDto.checkInDate,
+        createBookingDto.roomIds,
+      )
+    ).discount;
+
+    let finalCost = Number((baseCost - totalDiscount).toFixed(2));
+    if (finalCost < 0) finalCost = 0;
+
+    const createdBooking = await this.prisma.booking.create({
       data: {
-        userId: '69712cfc1eb777b7399e7f8a', // for now
+        userId,
         roomIds: createBookingDto.roomIds,
         checkInDate: createBookingDto.checkInDate,
         checkOutDate: createBookingDto.checkOutDate,
-        totalCost: totalCostOfRooms,
+        totalCost: finalCost,
         status: BookingStatus.CONFIRMED,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
     });
+
+    const rooms = await this.roomService.getRoomsByIds(
+      createBookingDto.roomIds,
+    );
+
+    return {
+      ...createdBooking,
+      rooms,
+    };
   }
 
   public validateSelectedDates(createBookingDto: CreateBookingDto): void {
@@ -99,7 +194,10 @@ export class BookingService {
     return { available: true };
   }
 
-  public async getReservedRoomIds(start: Date, end: Date): Promise<Set<string>> {
+  public async getReservedRoomIds(
+    start: Date,
+    end: Date,
+  ): Promise<Set<string>> {
     const bookings = await this.prisma.booking.findMany({
       where: {
         ...this.buildOverlapWhere(start, end),
@@ -166,11 +264,6 @@ export class BookingService {
   private async calculateTotalCostOfRooms(
     createBookingDto: CreateBookingDto,
   ): Promise<number> {
-    const numberOfNights = this.calculateNumberOfNights(
-      createBookingDto.checkInDate,
-      createBookingDto.checkOutDate,
-    );
-
     const roomPrices = await Promise.all(
       createBookingDto.roomIds.map(async (roomId) => {
         const hotel = await this.prisma.hotel.findFirst({
@@ -195,7 +288,96 @@ export class BookingService {
       return total + price;
     }, 0);
 
-    return numberOfNights * totalPriceOfRooms;
+    return totalPriceOfRooms;
+  }
+
+  private calculatePerPersonCost(
+    baseCost: number,
+    adultCount: number,
+    childCount: number,
+  ): number {
+    const totalPeople = adultCount + childCount;
+    const effectivePeople = totalPeople > 0 ? totalPeople : 1;
+    return baseCost / effectivePeople;
+  }
+
+  private calculateChildDiscounts(
+    childrenAges: number[],
+    perPersonCost: number,
+  ): { discount: number; promotions: string[] } {
+    const promotions: string[] = [];
+    let totalDiscount = 0;
+
+    // Rule 1: Children < 5 Free
+    const childrenUnder5 = childrenAges.filter((age) => age < 5).length;
+    if (childrenUnder5 > 0) {
+      const discount = childrenUnder5 * perPersonCost;
+      totalDiscount += discount;
+      promotions.push(
+        `Children < 5 Free (${childrenUnder5} children, saved ${discount.toFixed(
+          2,
+        )})`,
+      );
+    }
+
+    // Rule 1.1: Children >= 5 Pay Half Price
+    const children5OrOlder = childrenAges.filter((age) => age >= 5).length;
+    if (children5OrOlder > 0) {
+      const discount = children5OrOlder * perPersonCost * 0.5;
+      totalDiscount += discount;
+      promotions.push(
+        `Children >= 5 Half Price (${children5OrOlder} children, saved ${discount.toFixed(
+          2,
+        )})`,
+      );
+    }
+
+    return { discount: totalDiscount, promotions };
+  }
+
+  private applyGroupDiscount(
+    baseCost: number,
+    adultCount: number,
+  ): { discount: number; promotion?: string } {
+    if (adultCount >= 8) {
+      const discount = baseCost * 0.15;
+      return { discount, promotion: 'Group Discount 15%' };
+    }
+    return { discount: 0 };
+  }
+
+  private async applyFestiveDiscount(
+    baseCost: number,
+    checkInDate: Date,
+    roomIds: string[],
+  ): Promise<{ discount: number; promotion?: string }> {
+    if (roomIds.length > 0) {
+      const firstRoomId = roomIds[0];
+      const hotel = await this.prisma.hotel.findFirst({
+        where: { rooms: { some: { id: firstRoomId } } },
+        include: { festiveCalendars: true },
+      });
+
+      if (hotel) {
+        const checkIn = new Date(checkInDate);
+        checkIn.setHours(0, 0, 0, 0);
+
+        const festiveDate = hotel.festiveCalendars.find((f) => {
+          const fDate = new Date(f.date);
+          fDate.setHours(0, 0, 0, 0);
+          return fDate.getTime() === checkIn.getTime();
+        });
+
+        if (festiveDate) {
+          const discount = baseCost * (festiveDate.discountPercentage / 100);
+          return {
+            discount,
+            promotion: `Festive Discount ${festiveDate.description} (${festiveDate.discountPercentage}%)`,
+          };
+        }
+      }
+    }
+    return { discount: 0 };
   }
 
   private calculateNumberOfNights(checkIn: Date, checkOut: Date): number {
