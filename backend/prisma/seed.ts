@@ -60,6 +60,31 @@ async function main() {
     console.log(`Created hotel with rooms, hotel name: ${hotel.name}`);
   }
 
+  // Festive Calendar Seeding
+  const hotel = await prisma.hotel.findFirst();
+
+  if (hotel) {
+    const nextMonth = new Date();
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+    nextMonth.setDate(15);
+    nextMonth.setHours(0, 0, 0, 0);
+
+    const festiveDate = await prisma.festiveCalendar.create({
+      data: {
+        date: nextMonth,
+        hotelId: hotel.id,
+        discountPercentage: 20,
+        description: 'Super Festive Holiday',
+      },
+    });
+
+    console.log(
+      `Created festive date: ${festiveDate.date} for hotel ${hotel.name}`,
+    );
+  } else {
+    console.log('No hotel found for festive calendar seeding.');
+  }
+
   console.log('Seeding finished.');
 }
 

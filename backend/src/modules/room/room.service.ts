@@ -4,6 +4,7 @@ import { UpdateRoomDto } from './dto/update-room.dto';
 import { PrismaService } from '../database/prisma.service';
 import { Room } from '../../../generated/prisma/client';
 import { randomUUID } from 'crypto';
+import { RoomEntity } from './entities/room.entity';
 @Injectable()
 export class RoomService {
   constructor(private readonly prisma: PrismaService) {}
@@ -140,5 +141,26 @@ export class RoomService {
       },
     });
     return roomToRemove;
+  }
+
+  async getRoomsByIds(ids: string[]): Promise<RoomEntity[]> {
+    const hotels = await this.prisma.hotel.findMany({
+      where: {
+        rooms: {
+          some: {
+            id: {
+              in: ids,
+            },
+          },
+        },
+      },
+      select: {
+        rooms: true,
+      },
+    });
+
+    return hotels
+      .flatMap((hotel) => hotel.rooms)
+      .filter((room) => ids.includes(room.id)) as unknown as RoomEntity[];
   }
 }

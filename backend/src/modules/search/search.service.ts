@@ -32,8 +32,10 @@ export class SearchService {
         : undefined,
     });
 
-    const reservedRoomIds =
-      await this.bookingService.getReservedRoomIds(start, end);
+    const reservedRoomIds = await this.bookingService.getReservedRoomIds(
+      start,
+      end,
+    );
 
     const results: SearchResultDto[] = [];
 
