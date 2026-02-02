@@ -1,6 +1,14 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: var(--font-montserrat);
+}
 
-body {
+:root {
+  --font-sans: var(--font-montserrat);
+}
+
+html, body {
+  font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif !important;
   @apply bg-white text-gray-900 antialiased;
 }

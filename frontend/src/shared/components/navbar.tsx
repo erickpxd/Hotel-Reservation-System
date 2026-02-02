@@ -36,19 +36,19 @@ export function Navbar() {
             {isAuthenticated ? (
               <>
                 <div
-                  className="flex items-center gap-2 text-blue-800 px-4 py-2 hover:bg-blue-50 rounded-lg transition-colors border 
-                  border-transparent hover:border-blue-100 "
+                  className="flex items-center gap-2 text-blue-800 px-4 py-2 hover:bg-blue-50 rounded-lg 
+                  transition-colors border border-transparent hover:border-blue-100"
                 >
                   <div className="w-4 h-4 rounded-full flex items-center justify-center">
                     <Hotel size={18} />
                   </div>
-                  <span className="text-sm font-medium ">My reservations</span>
+                  <span className="text-sm font-medium">My reservations</span>
                 </div>
 
                 <button
                   onClick={logout}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors 
-                  border border-transparent hover:border-red-100"
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg
+                   transition-colors border border-transparent hover:border-red-100"
                 >
                   <LogOut size={18} />
                   Logout
@@ -58,13 +58,15 @@ export function Navbar() {
               <div className="flex items-center gap-3">
                 <Link
                   href="/login"
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                  className="w-[6rem] px-4 py-2 text-sm font-medium text-[#003B95] border border-[#003B95]
+                   rounded-lg hover:text-[#0653C9] transition-colors text-center"
                 >
                   Login
                 </Link>
                 <Link
                   href="/register"
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-all hover:shadow-md"
+                  className="w-[6rem] px-4 py-2 text-sm font-medium text-white bg-[#003B95] hover:bg-[#0653C9] 
+                   rounded-lg shadow-sm transition-all hover:shadow-md text-center"
                 >
                   Register
                 </Link>
@@ -84,19 +86,10 @@ export function Navbar() {
       </div>
 
       {isMobileMenuOpen && (
-        <div className="md:hidden border-t border-gray-100 bg-white">
+        <div className="md:hidden border-t border-gray-100 bg-white shadow-lg">
           <div className="px-4 pt-2 pb-6 space-y-2">
-            <Link href="/">
-              <Image
-                src="/logo2.svg"
-                alt="JalaHotel"
-                width={40}
-                height={40}
-                className="h-8 sm:h-10 w-auto"
-              />
-            </Link>
-
-            <div className="border-t border-gray-100 my-2 pt-2">
+            
+            <div className="mt-2"> 
               {isAuthenticated ? (
                 <>
                   <div className="px-3 py-2 flex items-center gap-3 text-gray-700 mb-2">
@@ -108,25 +101,28 @@ export function Navbar() {
                       logout();
                       setIsMobileMenuOpen(false);
                     }}
-                    className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50"
+                    className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md text-base 
+                    font-medium text-red-600 hover:bg-red-50"
                   >
                     <LogOut size={20} />
                     Logout
                   </button>
                 </>
               ) : (
-                <div className="flex flex-col gap-2 p-2">
+                <div className="flex flex-col gap-3 p-2"> 
                   <Link
                     href="/login"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="w-full text-center px-4 py-2 border border-gray-200 rounded-lg text-gray-700 font-medium hover:bg-gray-50"
+                    className="w-full text-center px-4 py-2 border border-[#003B95] rounded-lg 
+                    text-[#003B95] font-medium hover:text-[#0653C9] transition-colors"
                   >
                     Login
                   </Link>
                   <Link
                     href="/register"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="w-full text-center px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
+                    className="w-full text-center px-4 py-2 bg-[#003B95] text-white rounded-lg 
+                    font-medium hover:bg-[#0653C9] shadow-sm hover:shadow-md transition-all"
                   >
                     Register
                   </Link>
