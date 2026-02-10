@@ -2,16 +2,17 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Post,
   Query,
-  UseGuards,
   Request,
+  UseGuards,
 } from '@nestjs/common';
 import { BookingService } from './booking.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { BookingSummaryDto } from './dto/booking-summary.dto';
 import { BookingEntity } from './entities/booking.entity';
-import { ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AvailabilityQueryDto } from './dto/availability-query.dto';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -23,6 +24,8 @@ export class BookingController {
 
   @Post('/summary')
   @ApiOperation({ summary: 'Generate booking summary' })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @ApiResponse({
     status: 200,
     description: 'Return booking summary',
@@ -36,6 +39,8 @@ export class BookingController {
 
   @Post()
   @ApiOperation({ summary: 'Create booking' })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @ApiResponse({
     status: 201,
     description: 'Return created booking',
@@ -46,6 +51,15 @@ export class BookingController {
     @Request() req,
   ): Promise<BookingEntity> {
     return this.bookingService.createBooking(createBookingDto, req.user.id);
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'List user bookings' })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @ApiResponse({ status: 200, description: 'Return user bookings.' })
+  listUserBookings(@Request() req) {
+    return this.bookingService.listUserBookings(req.user.id);
   }
 
   @Get('/availability')
@@ -59,5 +73,17 @@ export class BookingController {
       checkInDate,
       checkOutDate,
     );
+  }
+
+  @Post(':id/cancel')
+  @ApiOperation({ summary: 'Cancel booking (rule of 3 days)' })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @ApiResponse({ status: 200, description: 'Booking canceled.' })
+  @ApiResponse({ status: 400, description: 'Cancelation rejected by policy.' })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  @ApiResponse({ status: 404, description: 'Booking not found.' })
+  cancelBooking(@Param('id') id: string, @Request() req) {
+    return this.bookingService.cancelBooking(id, req.user.id);
   }
 }

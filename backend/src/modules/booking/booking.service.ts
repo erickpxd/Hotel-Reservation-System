@@ -1,7 +1,9 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
@@ -169,6 +171,60 @@ export class BookingService {
       ...createdBooking,
       rooms,
     };
+  }
+
+  public async cancelBooking(
+    bookingId: string,
+    userId: string,
+  ): Promise<BookingEntity> {
+    const booking = await this.prisma.booking.findUnique({
+      where: { id: bookingId },
+    });
+
+    if (!booking) {
+      throw new NotFoundException(`Booking with ID ${bookingId} not found`);
+    }
+
+    if (booking.userId !== userId) {
+      throw new ForbiddenException(
+        'You are not allowed to cancel this booking.',
+      );
+    }
+
+    const now = new Date();
+    const startDate = new Date(booking.checkInDate);
+    const diffMs = startDate.getTime() - now.getTime();
+    const diffDays = diffMs / (1000 * 60 * 60 * 24);
+
+    if (diffDays <= 3) {
+      throw new BadRequestException(
+        'Cancelamento rejeitado. Você deve cancelar com 3 dias de antecedência. O valor total será cobrado.',
+      );
+    }
+
+    return this.prisma.booking.update({
+      where: { id: bookingId },
+      data: {
+        status: BookingStatus.CANCELLED,
+      },
+    });
+  }
+
+  public async listUserBookings(userId: string) {
+    return this.prisma.booking.findMany({
+      where: { userId },
+      select: {
+        id: true,
+        checkInDate: true,
+        checkOutDate: true,
+        totalCost: true,
+        status: true,
+        roomIds: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
   }
 
   public validateSelectedDates(createBookingDto: CreateBookingDto): void {

@@ -34,6 +34,7 @@ enum BookingStatus {
   CONFIRMED
   CANCELLED
   PENDING
+  COMPLETED
 }
 
 // --- TYPES ---
