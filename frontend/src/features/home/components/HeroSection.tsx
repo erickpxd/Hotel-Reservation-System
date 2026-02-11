@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import { MapPin } from "lucide-react";
 
 const HERO_IMAGES = [
-  "images/hero/hero-1.jpg", 
-  "images/hero/hero-2.png",
-  "images/hero/hero-3.png",
+  "/images/hero/hero-1.jpg", 
+  "/images/hero/hero-2.png",
+  "/images/hero/hero-3.png",
 ];
 
 export function HeroSection() {

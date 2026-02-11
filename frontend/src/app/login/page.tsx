@@ -1,4 +1,4 @@
-import { AuthBanner } from "../../features/auth/components/AuthBanner"; // Reutilizamos o banner do registro
+import { AuthBanner } from "../../features/auth/components/AuthBanner"; 
 import { LoginForm } from "../../features/auth/components/LoginForm";
 
 export default function LoginPage() {
