@@ -4,7 +4,32 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   output: "standalone",
   images: {
-    domains: ["images.unsplash.com"], 
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'loremflickr.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com', 
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'picsum.photos', 
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'plus.unsplash.com', 
+        port: '',
+        pathname: '/**',
+      },
+    ],
   },
 };
 
