@@ -15,6 +15,7 @@ import { BookingEntity } from './entities/booking.entity';
 import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AvailabilityQueryDto } from './dto/availability-query.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { BookingDto } from './dto/booking.dto';
 
 @Controller('bookings')
 @UseGuards(AuthGuard('jwt'))
@@ -49,7 +50,7 @@ export class BookingController {
   async createBooking(
     @Body() createBookingDto: CreateBookingDto,
     @Request() req,
-  ): Promise<BookingEntity> {
+  ): Promise<BookingDto> {
     return this.bookingService.createBooking(createBookingDto, req.user.id);
   }
 
