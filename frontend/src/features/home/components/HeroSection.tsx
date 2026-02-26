@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { MapPin } from "lucide-react";
+import toast from "react-hot-toast";
 
 const HERO_IMAGES = [
   "/images/hero/hero-1.jpg", 
@@ -32,15 +33,24 @@ export function HeroSection() {
   });
 
   const handleSearch = () => {
+    if (!filters.startDate || !filters.endDate) {
+      toast.error("Please select the check-in and check-out dates");
+      return;
+    }
+
+    const totalPeople = Number(filters.adults) + Number(filters.children);
+
     const query = new URLSearchParams({
-      city: filters.city,
       startDate: filters.startDate,
       endDate: filters.endDate,
-      peopleCount: (Number(filters.adults) + Number(filters.children)).toString(),
-    }).toString();
+      peopleCount: totalPeople.toString(),
+    });
 
-    console.log("Searching for:", query);
-    // router.push(`/search?${query}`);
+    if (filters.city) {
+      query.append("city", filters.city);
+    }
+
+    router.push(`/search?${query.toString()}`);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
