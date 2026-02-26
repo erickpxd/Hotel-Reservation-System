@@ -11,6 +11,7 @@ import { BookingSummaryDto } from './dto/booking-summary.dto';
 import { BookingEntity } from './entities/booking.entity';
 import { BookingStatus } from 'generated/prisma/enums';
 import { RoomService } from '../room/room.service';
+import { BookingDto } from './dto/booking.dto';
 
 @Injectable()
 export class BookingService {
@@ -101,7 +102,7 @@ export class BookingService {
   public async createBooking(
     createBookingDto: CreateBookingDto,
     userId: string,
-  ): Promise<BookingEntity> {
+  ): Promise<BookingDto> {
     this.validateSelectedDates(createBookingDto);
 
     await this.ensureRoomsAvailability(
@@ -291,6 +292,10 @@ export class BookingService {
     start: Date,
     end: Date,
   ): Promise<void> {
+    if (roomIds.length > 10) {
+      throw new BadRequestException('You can only book 10 rooms at a time.');
+    }
+
     await Promise.all(
       roomIds.map((roomId) => this.ensureAvailability(roomId, start, end)),
     );
