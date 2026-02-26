@@ -203,12 +203,19 @@ export class BookingService {
       );
     }
 
-    return this.prisma.booking.update({
+    const updatedBooking = await this.prisma.booking.update({
       where: { id: bookingId },
       data: {
         status: BookingStatus.CANCELLED,
       },
     });
+
+    const rooms = await this.roomService.getRoomsByIds(updatedBooking.roomIds);
+
+    return {
+      ...updatedBooking,
+      rooms,
+    };
   }
 
   public async listUserBookings(userId: string) {
