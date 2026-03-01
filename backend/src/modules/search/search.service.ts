@@ -1,9 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { BookingService } from '../booking/booking.service';
 import { SearchQueryDto } from './dto/search-query.dto';
 import { SearchResultDto } from './dto/search-result.dto';
 import { Room } from '../../../generated/prisma/client';
+import { RoomDto } from '../room/dto/room.dto';
+import { RoomTypeEnum } from '../room/enum/room-type.enum';
+import { RoomSearchParamsDto } from './dto/room-search-params.dto';
 
 @Injectable()
 export class SearchService {
@@ -157,5 +160,46 @@ export class SearchService {
 
     dfs(0, [], 0, 0);
     return results;
+  }
+
+  public async findAvailableRoomsAtTheHotel(
+    hotelId: string,
+    query: RoomSearchParamsDto,
+  ): Promise<RoomDto[]> {
+    const { startDate, endDate, adultsCount, childrenCount } = query;
+
+    const hotel = await this.prisma.hotel.findUnique({
+      where: {
+        id: hotelId,
+      },
+    });
+
+    if (!hotel) {
+      throw new NotFoundException('Hotel not found');
+    }
+
+    const { start, end } = this.bookingService.parseAndValidateDates(
+      startDate,
+      endDate,
+    );
+
+    const reservedRoomIds = await this.bookingService.getReservedRoomIds(
+      start,
+      end,
+    );
+
+    const availableRooms = hotel.rooms.filter(
+      (room) => room.available !== false && !reservedRoomIds.has(room.id),
+    );
+
+    return availableRooms.map((room) => ({
+      id: room.id,
+      number: room.number,
+      price: room.price,
+      type: room.type as RoomTypeEnum,
+      capacity: room.capacity,
+      available: room.available,
+      hotelId,
+    }));
   }
 }

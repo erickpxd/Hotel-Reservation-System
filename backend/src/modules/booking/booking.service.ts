@@ -177,7 +177,7 @@ export class BookingService {
   public async cancelBooking(
     bookingId: string,
     userId: string,
-  ): Promise<BookingEntity> {
+  ): Promise<BookingDto> {
     const booking = await this.prisma.booking.findUnique({
       where: { id: bookingId },
     });
