@@ -32,7 +32,7 @@ export async function createBooking(payload: BookingPayload, token: string) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}` 
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(payload),
   });
@@ -45,12 +45,15 @@ export async function createBooking(payload: BookingPayload, token: string) {
   return response.json();
 }
 
-export async function getBookingSummary(payload: BookingPayload, token: string): Promise<BookingSummaryResponse> {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bookings/summary`, {
+export async function getBookingSummary(
+  payload: BookingPayload,
+  token: string,
+): Promise<BookingSummaryResponse> {
+  const response = await fetch(`${API_URL}/bookings/summary`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(payload),
   });
@@ -60,4 +63,27 @@ export async function getBookingSummary(payload: BookingPayload, token: string):
     throw new Error(error.message || "Error fetching summary");
   }
   return response.json();
+}
+
+export async function getUserBookings(token: string): Promise<any[]> {
+  const response = await fetch(`${API_URL}/bookings`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error("Error loading reservations");
+  return response.json();
+}
+
+export async function cancelBooking(
+  bookingId: string,
+  token: string,
+): Promise<void> {
+  const response = await fetch(`${API_URL}/bookings/${bookingId}/cancel`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Error canceling reservation");
+  }
 }
