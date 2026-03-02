@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -8,7 +9,9 @@ import { getCookie } from "cookies-next";
 
 import {
   getHotelById,
+  getAvailableRooms,
   HotelDetails,
+  Room,
 } from "../../../features/hotels/services/hotelApi";
 import {
   createBooking,
@@ -31,7 +34,9 @@ export default function HotelDetailsPage({
   const { isAuthenticated } = useAuth();
 
   const [hotel, setHotel] = useState<HotelDetails | null>(null);
+  const [availableRooms, setAvailableRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingRooms, setLoadingRooms] = useState(false);
   const [selectedRoomIds, setSelectedRoomIds] = useState<string[]>([]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -40,12 +45,13 @@ export default function HotelDetailsPage({
 
   const [filters, setFilters] = useState({
     checkIn:
-      searchParams.get("startDate") || new Date().toISOString().split("T")[0],
+      searchParams.get("startDate") ||
+      new Date(Date.now() + 86400000).toISOString().split("T")[0],
     checkOut:
       searchParams.get("endDate") ||
-      new Date(Date.now() + 86400000).toISOString().split("T")[0],
-    adults: parseInt(searchParams.get("adults") || "2"),
-    children: parseInt(searchParams.get("children") || "0"),
+      new Date(Date.now() + 172800000).toISOString().split("T")[0],
+    adults: parseInt(searchParams.get("adultsCount") || "2"),
+    children: parseInt(searchParams.get("childrenCount") || "0"),
   });
 
   const calculateNights = (start: string, end: string) => {
@@ -59,23 +65,53 @@ export default function HotelDetailsPage({
   };
 
   useEffect(() => {
-    async function loadData() {
+    async function loadHotel() {
       try {
         const data = await getHotelById(hotelId);
         setHotel(data);
       } catch (error) {
-        toast.error("Error loading details");
+        toast.error("Error loading hotel details");
       } finally {
         setLoading(false);
       }
     }
-    loadData();
+    loadHotel();
   }, [hotelId]);
 
+  useEffect(() => {
+    async function loadAvailableRooms() {
+      if (!filters.checkIn || !filters.checkOut) return;
+
+      setLoadingRooms(true);
+      try {
+        const rooms = await getAvailableRooms(hotelId, {
+          startDate: filters.checkIn,
+          endDate: filters.checkOut,
+          adultsCount: filters.adults,
+          childrenCount: filters.children,
+        });
+        setAvailableRooms(rooms);
+        setSelectedRoomIds([]);
+      } catch (error) {
+        console.error("Error loading available rooms:", error);
+        toast.error("Could not fetch available rooms for these dates.");
+      } finally {
+        setLoadingRooms(false);
+      }
+    }
+
+    loadAvailableRooms();
+  }, [
+    hotelId,
+    filters.checkIn,
+    filters.checkOut,
+    filters.adults,
+    filters.children,
+  ]);
+
   const calculateTotal = () => {
-    if (!hotel) return { perNight: 0, total: 0, nights: 0 };
     const nights = calculateNights(filters.checkIn, filters.checkOut);
-    const perNight = hotel.rooms
+    const perNight = availableRooms
       .filter((r) => selectedRoomIds.includes(r.id))
       .reduce((acc, room) => acc + Number(room.price), 0);
 
@@ -96,9 +132,16 @@ export default function HotelDetailsPage({
 
     const token = getCookie("auth_token") as string;
 
+    const checkInDateStr = new Date(
+      `${filters.checkIn}T00:00:00`,
+    ).toISOString();
+    const checkOutDateStr = new Date(
+      `${filters.checkOut}T00:00:00`,
+    ).toISOString();
+
     const payload = {
-      checkInDate: new Date(filters.checkIn).toISOString(),
-      checkOutDate: new Date(filters.checkOut).toISOString(),
+      checkInDate: checkInDateStr,
+      checkOutDate: checkOutDateStr,
       roomIds: selectedRoomIds,
       adultCount: filters.adults,
       children: {
@@ -121,8 +164,8 @@ export default function HotelDetailsPage({
     setIsReserving(true);
 
     const payload = {
-      checkInDate: new Date(filters.checkIn).toISOString(),
-      checkOutDate: new Date(filters.checkOut).toISOString(),
+      checkInDate: new Date(`${filters.checkIn}T00:00:00`).toISOString(),
+      checkOutDate: new Date(`${filters.checkOut}T00:00:00`).toISOString(),
       roomIds: selectedRoomIds,
       adultCount: filters.adults,
       children: {
@@ -135,8 +178,7 @@ export default function HotelDetailsPage({
       await createBooking(payload, token);
       toast.success("Reservation successfully completed!");
       setIsModalOpen(false);
-      router.push("/");
-      // router.push("/reservations");
+      router.push("/my-bookings");
     } catch (error: any) {
       toast.error(error.message || "Failed to complete reservation");
     } finally {
@@ -147,8 +189,8 @@ export default function HotelDetailsPage({
   return (
     <>
       <HotelDetailsTemplate
-        hotel={hotel}
-        loading={loading}
+        hotel={hotel ? { ...hotel, rooms: availableRooms } : null}
+        loading={loading || loadingRooms}
         isAuthenticated={isAuthenticated}
         selectedRoomIds={selectedRoomIds}
         dates={{
@@ -176,9 +218,6 @@ export default function HotelDetailsPage({
           loading={isReserving}
         />
       )}
-
-     
     </>
-    
   );
 }

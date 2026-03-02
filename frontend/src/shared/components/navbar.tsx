@@ -35,15 +35,14 @@ export function Navbar() {
           <div className="hidden md:flex items-center gap-6">
             {isAuthenticated ? (
               <>
-                <div
+                <Link
+                  href="/my-bookings"
                   className="flex items-center gap-2 text-blue-800 px-4 py-2 hover:bg-blue-50 rounded-lg 
                   transition-colors border border-transparent hover:border-blue-100"
                 >
-                  <div className="w-4 h-4 rounded-full flex items-center justify-center">
-                    <Hotel size={18} />
-                  </div>
+                  <Hotel size={18} />
                   <span className="text-sm font-medium">My reservations</span>
-                </div>
+                </Link>
 
                 <button
                   onClick={logout}
@@ -92,10 +91,14 @@ export function Navbar() {
             <div className="mt-2"> 
               {isAuthenticated ? (
                 <>
-                  <div className="px-3 py-2 flex items-center gap-3 text-gray-700 mb-2">
+                  <Link 
+                    href="/my-bookings"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="px-3 py-2 flex items-center gap-3 text-gray-700 hover:bg-gray-50 rounded-md mb-2"
+                  >
                     <Hotel size={20} />
-                    <span className="font-medium">My Profile</span>
-                  </div>
+                    <span className="font-medium">My reservations</span>
+                  </Link>
                   <button
                     onClick={() => {
                       logout();

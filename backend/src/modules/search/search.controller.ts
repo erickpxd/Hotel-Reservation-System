@@ -21,7 +21,7 @@ export class SearchController {
   search(@Query() query: SearchQueryDto): Promise<SearchResultDto[]> {
     return this.searchService.search(query);
   }
-  
+
   @Get('available-rooms/:hotelId')
   @ApiOperation({ summary: 'Get available rooms for a hotel' })
   @ApiResponse({
@@ -29,7 +29,10 @@ export class SearchController {
     description: 'Return available rooms from a hotel.',
     type: [RoomDto],
   })
-  findAvailableRoomsAtTheHotel(@Param('hotelId') hotelId: string, @Query() query: RoomSearchParamsDto): Promise<RoomDto[]> {
+  findAvailableRoomsAtTheHotel(
+    @Param('hotelId') hotelId: string,
+    @Query() query: RoomSearchParamsDto,
+  ): Promise<RoomDto[]> {
     return this.searchService.findAvailableRoomsAtTheHotel(hotelId, query);
   }
 }

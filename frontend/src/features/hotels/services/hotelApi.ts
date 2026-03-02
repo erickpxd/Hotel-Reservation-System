@@ -28,7 +28,7 @@ export async function getHotels() {
   });
 
   if (!response.ok) {
-    throw new Error("“Error fetching hotels from server.");
+    throw new Error("Error fetching hotels from server.");
   }
 
   return response.json();
@@ -44,6 +44,39 @@ export async function getHotelById(id: string): Promise<HotelDetails> {
 
   if (!response.ok) {
     throw new Error("Error fetching hotel details.");
+  }
+
+  return response.json();
+}
+
+export async function getAvailableRooms(
+  hotelId: string,
+  params: {
+    startDate: string;
+    endDate: string;
+    adultsCount: number;
+    childrenCount: number;
+  },
+): Promise<Room[]> { 
+  const query = new URLSearchParams({
+    startDate: params.startDate,
+    endDate: params.endDate,
+    adultsCount: params.adultsCount.toString(),
+    childrenCount: params.childrenCount.toString(),
+  }).toString();
+
+  const response = await fetch(
+    `${API_URL}/search/available-rooms/${hotelId}?${query}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error("Error while searching for available rooms");
   }
 
   return response.json();

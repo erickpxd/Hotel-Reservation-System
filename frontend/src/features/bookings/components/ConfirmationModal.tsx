@@ -53,7 +53,8 @@ export function ConfirmationModal({
               <div>
                 <span className={labelStyle}>Check-in</span>
                 <p className={valueStyle}>
-                  {new Date(summary.checkInDate).toLocaleDateString(undefined, {
+                  {new Date(summary.checkInDate).toLocaleDateString("pt-BR", {
+                    timeZone: "UTC",
                     day: "2-digit",
                     month: "short",
                     year: "numeric",
@@ -65,10 +66,12 @@ export function ConfirmationModal({
               <div>
                 <span className={labelStyle}>Check-out</span>
                 <p className={valueStyle}>
-                  {new Date(summary.checkOutDate).toLocaleDateString(
-                    undefined,
-                    { day: "2-digit", month: "short", year: "numeric" },
-                  )}
+                  {new Date(summary.checkOutDate).toLocaleDateString("pt-BR", {
+                    timeZone: "UTC",
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  })}
                 </p>
               </div>
               <div className="text-[#003B95] mt-1"></div>
@@ -151,7 +154,6 @@ export function ConfirmationModal({
                 <span className="text-sm font-bold text-slate-400 uppercase tracking-widest block">
                   Total to Pay
                 </span>
-                {summary.estimatedDiscount > 0}
               </div>
               <span className="text-2xl font-extrabold text-[#003B95]">
                 R$ {summary.finalCost.toFixed(2)}
