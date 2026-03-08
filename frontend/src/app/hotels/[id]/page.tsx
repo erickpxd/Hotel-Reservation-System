@@ -61,8 +61,34 @@ export default function HotelDetailsPage({
   };
 
   const updateFilters = (name: string, value: any) => {
-    setFilters((prev) => ({ ...prev, [name]: value }));
-  };
+  setFilters((prev) => {
+    const newFilters = { ...prev, [name]: value };
+
+    if (name === "checkIn") {
+      const newCheckIn = new Date(value);
+      const currentCheckOut = new Date(prev.checkOut);
+
+      if (newCheckIn >= currentCheckOut) {
+        const nextDay = new Date(newCheckIn);
+        nextDay.setDate(nextDay.getDate() + 1);
+        
+        newFilters.checkOut = nextDay.toISOString().split("T")[0];
+      }
+    }
+    
+    if (name === "checkOut") {
+      const newCheckOut = new Date(value);
+      const currentCheckIn = new Date(prev.checkIn);
+      
+      if (newCheckOut <= currentCheckIn) {
+        toast.error("Check-out must be after check-in");
+        return prev; 
+      }
+    }
+
+    return newFilters;
+  });
+};
 
   useEffect(() => {
     async function loadHotel() {
@@ -81,6 +107,14 @@ export default function HotelDetailsPage({
   useEffect(() => {
     async function loadAvailableRooms() {
       if (!filters.checkIn || !filters.checkOut) return;
+      
+      const start = new Date(filters.checkIn);
+      const end = new Date(filters.checkOut);
+
+      if (start >= end) {
+        setAvailableRooms([]); 
+        return; 
+      }
 
       setLoadingRooms(true);
       try {

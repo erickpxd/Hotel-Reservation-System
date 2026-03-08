@@ -1,6 +1,33 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+
 import Image from "next/image";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { getHotels } from "../../hotels/services/hotelApi";
 
 export function JumaSpotlight() {
+  const router = useRouter();
+  const [hotelId, setHotelId] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchHotel() {
+      try {
+        const hotels = await getHotels();
+        const juma = hotels.find((h: any) => h.name === "Juma Amazon Lodge");
+        if (juma) setHotelId(juma.id);
+      } catch (error) {
+        console.error("Error while fetching hotel:", error);
+      }
+    }
+    fetchHotel();
+  }, []);
+
+  const handleBookNow = () => {
+    if (hotelId) {
+      router.push(`/hotels/${hotelId}`);
+    }
+  };
   return (
     <section className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <p className="text-3xl md:text-4xl font-normal text-[#003B95] text-center mb-12 lg:mb-20">
@@ -52,10 +79,11 @@ export function JumaSpotlight() {
           </div>
 
           <button
+            onClick={handleBookNow}
             className="w-full px-10 py-4 bg-[#003B95] text-white font-bold rounded-lg 
             hover:bg-white border hover:text-[#003B95]  transition-all duration-300 shadow-lg active:scale-95"
           >
-            Book Now
+            {hotelId ? "Book Now" : "Loading..."}
           </button>
         </div>
 

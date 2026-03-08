@@ -6,7 +6,10 @@ import { randomUUID } from 'crypto';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Start seeding ...');
+  console.log('Cleaning database...');
+  await prisma.booking.deleteMany();
+  await prisma.festiveCalendar.deleteMany();
+  await prisma.hotel.deleteMany();
 
   const hotelsData = [
     {
@@ -97,6 +100,18 @@ async function main() {
         'Experience the elegance of the Old South in a restored mansion.',
     },
     {
+      name: 'Juma Amazon Lodge',
+      address: 'Autazes, Amazon Rainforest, Brazil',
+      description:
+        'A sustainable eco-lodge nestled deep within the lush Amazon rainforest, offering an immersive jungle experience. \nGuests can stay in bungalows built on stilts among the treetops, surrounded by vibrant biodiversity and serene river views. \nPerfect for adventurers seeking an authentic connection with nature through guided forest treks and river tours.',
+    },
+    {
+      name: 'Haus Hirt',
+      address: 'Kaiser-Franz-Josef-Straße 49, Bad Gastein, Austria',
+      description:
+        'A charming alpine retreat located in the heart of the Austrian Alps, blending classic tradition with modern boutique elegance. \nThe hotel features a world-class spa and panoramic mountain vistas that transform beautifully from snow-capped winter peaks to lush spring meadows. \nIt provides a cozy and sophisticated atmosphere for relaxation, wellness, and breathtaking seasonal views.',
+    },
+    {
       name: 'San Diego Surf House',
       address: '101 Ocean Front, San Diego, CA',
       description: 'Casual beach vibes just steps away from the Pacific waves.',
@@ -150,7 +165,6 @@ async function main() {
     console.log(`Created hotel with rooms, hotel name: ${hotel.name}`);
   }
 
-  // Festive Calendar Seeding
   const hotel = await prisma.hotel.findFirst();
 
   if (hotel) {

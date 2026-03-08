@@ -1,6 +1,34 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+
 import Image from "next/image";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { getHotels } from "../../hotels/services/hotelApi";
 
 export function HausHirtSpotlight() {
+  const router = useRouter(); 
+  const [hotelId, setHotelId] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchHotel() {
+      try {
+        const hotels = await getHotels(); 
+        const haus = hotels.find((h: any) => h.name === "Haus Hirt");
+        if (haus) setHotelId(haus.id);
+      } catch (error) {
+        console.error("Error while fetching hotel:", error);
+      }
+    }
+    fetchHotel();
+  }, []);
+
+  const handleBookNow = () => {
+    if (hotelId) {
+      router.push(`/hotels/${hotelId}`);
+    }
+  };
+
   return (
     <section className="pb-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
@@ -66,10 +94,12 @@ export function HausHirtSpotlight() {
           </div>
 
           <button
+            onClick={handleBookNow} 
+            disabled={!hotelId} 
             className="w-full px-10 py-4 bg-[#003B95] text-white font-bold rounded-lg 
-            hover:bg-white border hover:text-[#003B95] transition-all duration-300 shadow-lg active:scale-95"
+            hover:bg-white border hover:text-[#003B95] transition-all duration-300 shadow-lg active:scale-95 disabled:bg-gray-400"
           >
-            Book Now
+            {hotelId ? "Book Now" : "Loading..."}
           </button>
         </div>
 
