@@ -199,7 +199,7 @@ export class BookingService {
 
     if (diffDays <= 3) {
       throw new BadRequestException(
-        'Cancelamento rejeitado. Você deve cancelar com 3 dias de antecedência. O valor total será cobrado.',
+        'Cancellation rejected. \nThe reservation can only be canceled up to 3 days before the check-in date. \nThe full amount will be charged.',
       );
     }
 

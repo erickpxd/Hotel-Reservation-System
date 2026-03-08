@@ -1,4 +1,9 @@
 export class HotelImageHelper {
+  private static readonly SPECIFIC_IMAGES: Record<string, string> = {
+    "Juma Amazon Lodge": "/images/hotels/paradisiacal/juma-1.jpg",
+    "Haus Hirt": "/images/hotels/paradisiacal/haus-7.png",
+  };
+
   private static readonly PLACEHOLDERS = [
     "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=1920&q=80&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1606046604972-77cc76aee944?w=1920&q=80&auto=format&fit=crop",
@@ -22,16 +27,17 @@ export class HotelImageHelper {
     "https://plus.unsplash.com/premium_photo-1681922761648-d5e2c3972982?w=1920&q=80&auto=format&fit=crop",
   ];
 
-  static getImage(hotelId: string = "default"): string {
-    let hash = 0;
-    const str = hotelId;
+  static getImage(hotelId: string = "default", hotelName?: string): string {
+    if (hotelName && this.SPECIFIC_IMAGES[hotelName]) {
+      return this.SPECIFIC_IMAGES[hotelName];
+    }
 
-    for (let i = 0; i < str.length; i++) {
-      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    let hash = 0;
+    for (let i = 0; i < hotelId.length; i++) {
+      hash = hotelId.charCodeAt(i) + ((hash << 5) - hash);
     }
 
     const index = Math.abs(hash) % this.PLACEHOLDERS.length;
-
     return `${this.PLACEHOLDERS[index]}?w=1920&q=80&auto=format&fit=crop`;
   }
 }

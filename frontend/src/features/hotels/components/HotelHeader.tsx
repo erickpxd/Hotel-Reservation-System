@@ -27,7 +27,7 @@ export function HotelHeader({ hotel }: HotelHeaderProps) {
 
         <div className="relative w-full h-[400px] rounded-2xl overflow-hidden shadow-lg group">
           <Image
-            src={HotelImageHelper.getImage(hotel.id)}
+            src={HotelImageHelper.getImage(hotel.id, hotel.name)}
             alt={hotel.name}
             fill
             quality={100}
