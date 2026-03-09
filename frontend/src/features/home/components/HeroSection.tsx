@@ -29,7 +29,6 @@ export function HeroSection() {
     endDate: "",
     adults: 2,
     children: 0,
-    rooms: 1,
   });
 
   const handleSearch = () => {
@@ -150,21 +149,7 @@ export function HeroSection() {
             />
           </div>
 
-          <div className="lg:col-span-1 py-2 lg:py-0 lg:px-4 space-y-1">
-            <label className="block text-[10px] font-bold tracking-widest text-gray-400 uppercase mb-1">
-              Rooms
-            </label>
-            <input
-              name="rooms"
-              type="number"
-              min={1}
-              className="w-full font-medium text-gray-800 text-sm lg:text-base focus:outline-none bg-transparent"
-              value={filters.rooms}
-              onChange={handleInputChange}
-            />
-          </div>
-
-          <div className="lg:col-span-2 py-2 lg:py-0 lg:pl-4">
+          <div className="lg:col-span-3 py-2 lg:py-0 lg:pl-6 ">
             <button 
               onClick={handleSearch}
               className="w-full bg-[#003B95] hover:bg-[#0653C9] text-white font-medium text-sm lg:text-base py-4 rounded-xl 

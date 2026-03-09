@@ -11,6 +11,7 @@ import { Footer } from "@/src/shared/components/footer";
 interface HotelDetailsTemplateProps {
   hotel: HotelDetails | null;
   loading: boolean;
+  loadingRooms: boolean;
   isAuthenticated: boolean;
   selectedRoomIds: string[];
   dates: {
@@ -36,6 +37,7 @@ interface HotelDetailsTemplateProps {
 export function HotelDetailsTemplate({
   hotel,
   loading,
+  loadingRooms,
   isAuthenticated,
   selectedRoomIds,
   dates,
@@ -63,6 +65,7 @@ export function HotelDetailsTemplate({
             rooms={hotel.rooms}
             selectedRoomIds={selectedRoomIds}
             onToggleRoom={onToggleRoom}
+            loadingRooms={loadingRooms}
           />
         </div>
 

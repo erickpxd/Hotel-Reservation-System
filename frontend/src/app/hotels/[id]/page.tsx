@@ -224,7 +224,8 @@ export default function HotelDetailsPage({
     <>
       <HotelDetailsTemplate
         hotel={hotel ? { ...hotel, rooms: availableRooms } : null}
-        loading={loading || loadingRooms}
+        loading={loading}
+        loadingRooms={loadingRooms}
         isAuthenticated={isAuthenticated}
         selectedRoomIds={selectedRoomIds}
         dates={{

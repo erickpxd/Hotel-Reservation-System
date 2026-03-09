@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
 import 'dotenv/config';
 import { PrismaClient } from '../generated/prisma/client';
 import { RoomTypeEnum } from 'src/modules/room/enum/room-type.enum';
