@@ -24,7 +24,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('Hotel Reservation System - Group 5')
     .setDescription('Hotel Reservation System - Group 5 API description')
-    .setVersion('0.0.1')
+    .setVersion('1.1.0')
     .addTag('hotel')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);

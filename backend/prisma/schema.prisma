@@ -34,6 +34,7 @@ enum BookingStatus {
   CONFIRMED
   CANCELLED
   PENDING
+  COMPLETED
 }
 
 // --- TYPES ---
@@ -59,8 +60,9 @@ model Hotel {
 
   rooms Room[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  festiveCalendars FestiveCalendar[]
 
   @@map("hotels")
 }
@@ -90,4 +92,16 @@ model Booking {
   user User @relation(fields: [userId], references: [id])
 
   @@map("bookings")
+}
+
+model FestiveCalendar {
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  date               DateTime
+  hotelId            String   @db.ObjectId
+  discountPercentage Float
+  description        String
+
+  hotel Hotel @relation(fields: [hotelId], references: [id])
+
+  @@map("festive_calendars")
 }

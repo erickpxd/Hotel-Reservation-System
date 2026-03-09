@@ -28,10 +28,10 @@ export function LoginForm() {
     try {
       const result = await loginUser(data);
 
-      toast.success("Login efetuado com sucesso!");
+      toast.success("Login successful!");
       login(result.access_token);
     } catch (err: any) {
-      toast.error(err.message || "Erro ao entrar.");
+      toast.error(err.message || "Login error.");
     }
   };
 
