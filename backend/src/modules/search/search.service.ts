@@ -1,9 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { BookingService } from '../booking/booking.service';
 import { SearchQueryDto } from './dto/search-query.dto';
 import { SearchResultDto } from './dto/search-result.dto';
 import { Room } from '../../../generated/prisma/client';
+import { RoomDto } from '../room/dto/room.dto';
+import { RoomTypeEnum } from '../room/enum/room-type.enum';
+import { RoomSearchParamsDto } from './dto/room-search-params.dto';
 
 @Injectable()
 export class SearchService {
@@ -32,10 +35,12 @@ export class SearchService {
         : undefined,
     });
 
-    const reservedRoomIds =
-      await this.bookingService.getReservedRoomIds(start, end);
+    const reservedRoomIds = await this.bookingService.getReservedRoomIds(
+      start,
+      end,
+    );
 
-    const results: SearchResultDto[] = [];
+    const results: Map<string, SearchResultDto> = new Map();
 
     for (const hotel of hotels) {
       const availableRooms = hotel.rooms.filter(
@@ -60,25 +65,34 @@ export class SearchService {
       });
 
       combinations.forEach((combo, index) => {
-        const totalPrice = combo.totalPrice;
-        results.push({
-          hotelId: hotel.id,
-          hotelName: hotel.name,
-          location: hotel.address,
-          optionLabel: `Opcao ${index + 1} (${peopleCount} Pessoas)`,
+        let hotelInResultDto = results.get(hotel.id);
+
+        if (hotelInResultDto === undefined) {
+          hotelInResultDto = {
+            hotelId: hotel.id,
+            hotelName: hotel.name,
+            hotelDescription: hotel.description,
+            location: hotel.address,
+            options: [],
+          };
+        }
+
+        hotelInResultDto.options.push({
+          optionLabel: `Option ${index + 1} (${peopleCount} People)`,
           rooms: combo.rooms.map((room) => ({
             id: room.id,
             type: room.type,
             price: room.price,
             capacity: room.capacity,
           })),
-          totalPrice,
-          available: true,
+          totalPrice: combo.totalPrice,
         });
+
+        results.set(hotel.id, hotelInResultDto);
       });
     }
 
-    return results;
+    return Array.from(results.values());
   }
 
   private calculateNights(start: Date, end: Date): number {
@@ -155,5 +169,46 @@ export class SearchService {
 
     dfs(0, [], 0, 0);
     return results;
+  }
+
+  public async findAvailableRoomsAtTheHotel(
+    hotelId: string,
+    query: RoomSearchParamsDto,
+  ): Promise<RoomDto[]> {
+    const { startDate, endDate, adultsCount, childrenCount } = query;
+
+    const hotel = await this.prisma.hotel.findUnique({
+      where: {
+        id: hotelId,
+      },
+    });
+
+    if (!hotel) {
+      throw new NotFoundException('Hotel not found');
+    }
+
+    const { start, end } = this.bookingService.parseAndValidateDates(
+      startDate,
+      endDate,
+    );
+
+    const reservedRoomIds = await this.bookingService.getReservedRoomIds(
+      start,
+      end,
+    );
+
+    const availableRooms = hotel.rooms.filter(
+      (room) => room.available !== false && !reservedRoomIds.has(room.id),
+    );
+
+    return availableRooms.map((room) => ({
+      id: room.id,
+      number: room.number,
+      price: room.price,
+      type: room.type as RoomTypeEnum,
+      capacity: room.capacity,
+      available: room.available,
+      hotelId,
+    }));
   }
 }

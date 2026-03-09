@@ -14,17 +14,8 @@ export class SearchRoomDto {
   capacity: number;
 }
 
-export class SearchResultDto {
-  @ApiProperty({ example: '64f8a... (ObjectId)' })
-  hotelId: string;
-
-  @ApiProperty({ example: 'Hotel Cochabamba Plaza' })
-  hotelName: string;
-
-  @ApiProperty({ example: 'Cochabamba' })
-  location: string;
-
-  @ApiProperty({ example: 'Opcao 1 (5 Pessoas)' })
+export class SearchOptionDto {
+  @ApiProperty({ example: 'Option 1 (5 People)' })
   optionLabel: string;
 
   @ApiProperty({ type: [SearchRoomDto] })
@@ -32,7 +23,21 @@ export class SearchResultDto {
 
   @ApiProperty({ example: 180 })
   totalPrice: number;
+}
 
-  @ApiProperty({ example: true })
-  available: boolean;
+export class SearchResultDto {
+  @ApiProperty({ example: '64f8a... (ObjectId)' })
+  hotelId: string;
+
+  @ApiProperty({ example: 'Hotel Cochabamba Plaza' })
+  hotelName: string;
+  
+  @ApiProperty({ example: 'A hotel in Cochabamba' })
+  hotelDescription: string | null;
+  
+  @ApiProperty({ example: 'Cochabamba' })
+  location: string;
+  
+  @ApiProperty({ type: [SearchOptionDto] })
+  options: SearchOptionDto[];
 }

@@ -5,8 +5,9 @@ import {
   IsDate,
   IsArray,
   IsNumber,
-  IsOptional,
+  ValidateNested,
 } from 'class-validator';
+import { ChildrenDto } from './children.dto';
 
 export class CreateBookingDto {
   @ApiProperty({
@@ -40,6 +41,15 @@ export class CreateBookingDto {
     example: 2,
   })
   @IsNumber()
-  @IsOptional()
-  people?: number;
+  @IsNotEmpty()
+  adultCount: number;
+
+  @ApiProperty({
+    type: Object,
+    example: { count: 1, ages: [3] },
+  })
+  @IsNotEmpty()
+  @ValidateNested()
+  @Type(() => ChildrenDto)
+  children: ChildrenDto;
 }

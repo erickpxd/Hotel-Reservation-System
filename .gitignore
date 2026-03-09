@@ -8,3 +8,5 @@ node_modules
 .next/
 next-env.d.ts
 tempCodeRunnerFile.js
+postman-collection.json
+postman-environment.json
