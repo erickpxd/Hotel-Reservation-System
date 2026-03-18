@@ -96,7 +96,16 @@ docker-compose up -d
 
 ## 👥 Team 
 
-- [**Akyssa Silva**](https://gitlab.com/akyssa.silva)
-- [**Erick Monteiro**](https://gitlab.com/Erickpxd)
-- [**Eugenio Santana**](https://gitlab.com/eugenio.santana.jala.u)
+**Akyssa Silva**
+
+[![GitLab](https://img.shields.io/badge/GitLab-FC6D26?logo=gitlab&logoColor=white)](https://gitlab.com/akyssa.silva)
+
+**Erick Monteiro**
+  
+ [![GitLab](https://img.shields.io/badge/GitLab-FC6D26?logo=gitlab&logoColor=white)](https://gitlab.com/Erickpxd)
+[![GitHub](https://img.shields.io/badge/GitHub-000?logo=github&logoColor=white)](https://github.com/erickpxd)
+
+**Eugenio Santana** 
+
+[![GitLab](https://img.shields.io/badge/GitLab-FC6D26?logo=gitlab&logoColor=white)](https://gitlab.com/eugenio-jefferson)
 

@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 import 'dotenv/config';
-import { PrismaClient } from '../generated/prisma/client';
-import { RoomTypeEnum } from 'src/modules/room/enum/room-type.enum';
 import { randomUUID } from 'crypto';
+import { PrismaClient, RoomType } from '../generated/prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -138,11 +137,11 @@ async function main() {
   ];
 
   const roomTypes = [
-    RoomTypeEnum.SINGLE_ONE_BED,
-    RoomTypeEnum.SINGLE_TWO_BEDS,
-    RoomTypeEnum.SINGLE_THREE_BEDS,
-    RoomTypeEnum.SUITE_ONE_BIG_BED,
-    RoomTypeEnum.SUITE_BIG_AND_SMALL_BED,
+    RoomType.SINGLE_ONE_BED,
+    RoomType.SINGLE_TWO_BEDS,
+    RoomType.SINGLE_THREE_BEDS,
+    RoomType.SUITE_ONE_BIG_BED,
+    RoomType.SUITE_BIG_AND_SMALL_BED,
   ];
 
   for (const hotelData of hotelsData) {

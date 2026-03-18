@@ -22,7 +22,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${montserrat.variable} font-sans antialiased bg-gray-50 text-gray-900`}>
+      <body
+        suppressHydrationWarning
+        className={`${montserrat.variable} font-sans antialiased bg-gray-50 text-gray-900`}
+      >
         <AuthProvider>
           <Toaster position="top-center" />
           <Navbar />
